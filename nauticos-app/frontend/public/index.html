@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<title>NauticOS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0B2D52;--blue:#1A6DB5;--blue-pale:#E8F3FD;--teal:#0D8F72;--teal-pale:#E0F5F0;--amber:#C97A12;--amber-pale:#FEF3E2;--red:#C8302A;--red-pale:#FDEAEA;--green:#2D7A3A;--green-pale:#E4F5E7;--gray-100:#EDEEF2;--gray-200:#D6D8DF;--gray-400:#9699A6;--gray-600:#5C5F6E;--text:#1A1C26;--surface:#fff;--bg:#F0F3F8;--border:rgba(0,0,0,.08);--r-md:10px;--r-lg:16px;--r-xl:24px;--font:'DM Sans',sans-serif;--mono:'DM Mono',monospace}
+html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);font-size:16px;-webkit-font-smoothing:antialiased;}
+#app{height:100vh;display:flex;flex-direction:column;max-width:430px;margin:0 auto;background:var(--surface);position:relative;overflow:hidden}
+@media(min-width:500px){body{background:#0B2D52;}#app{height:100vh;width:100%;max-width:100%;}}
+.page{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg);opacity:0;pointer-events:none;transform:translateX(20px);transition:.18s cubic-bezier(.4,0,.2,1);overflow:hidden}
+.page.active{opacity:1;pointer-events:all;transform:translateX(0)}
+/* LOGIN */
+.login-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 28px;background:var(--navy)}
+.login-logo{font-size:44px;margin-bottom:8px}
+.login-title{font-size:28px;font-weight:700;color:#fff;margin-bottom:4px}
+.login-sub{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:36px}
+.login-form{width:100%;display:flex;flex-direction:column;gap:12px}
+.login-input{width:100%;font-family:var(--font);font-size:15px;color:#111;background:#fff;border:2px solid #fff;border-radius:var(--r-md);padding:14px 16px;outline:none}
+.login-input::placeholder{color:#999}
+.login-btn{width:100%;background:#fff;color:var(--navy);font-family:var(--font);font-size:15px;font-weight:700;padding:14px;border:none;border-radius:var(--r-md);cursor:pointer;margin-top:4px}
+.login-btn:hover{background:#eef}
+.login-error{font-size:12px;color:#ff8080;text-align:center;min-height:18px}
+.login-hint{font-size:11px;color:rgba(255,255,255,.35);text-align:center;margin-top:20px;line-height:1.8}
+/* TOPBAR */
+.topbar{background:var(--navy);padding:16px 20px 18px;flex-shrink:0;color:#fff}
+.topbar-eyebrow{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:3px}
+.topbar-title{font-size:19px;font-weight:600}
+.topbar-sub{font-size:12px;color:rgba(255,255,255,.6);margin-top:4px;display:flex;align-items:center;gap:6px}
+.sdot{width:6px;height:6px;border-radius:50%;background:#3DD68C;display:inline-block;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* SCROLL */
+.scroll{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+/* CARDS */
+.card{background:var(--surface);border-radius:var(--r-lg);padding:14px 16px;box-shadow:0 1px 3px rgba(11,45,82,.08);border:.5px solid var(--border)}
+.card-label{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--gray-400);margin-bottom:8px}
+.card-title{font-size:14px;font-weight:500;color:var(--text)}
+.card-sub{font-size:12px;color:var(--gray-600);margin-top:3px;line-height:1.5}
+/* BOAT HERO */
+.boat-hero{background:linear-gradient(135deg,var(--navy),#15437A);border-radius:var(--r-xl);padding:18px;color:#fff;box-shadow:0 4px 12px rgba(11,45,82,.2);position:relative;overflow:hidden}
+.boat-hero::before{content:'';position:absolute;right:-20px;top:-20px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.04)}
+.hero-model{font-size:20px;font-weight:600}
+.hero-serial{font-size:11px;font-family:var(--mono);color:rgba(255,255,255,.5);margin-top:4px}
+.pill-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.pill{background:rgba(255,255,255,.1);border:.5px solid rgba(255,255,255,.15);border-radius:100px;padding:5px 10px;font-size:11px;font-weight:500;color:rgba(255,255,255,.8);display:flex;align-items:center;gap:5px}
+.pill.online{background:rgba(61,214,140,.15);border-color:rgba(61,214,140,.3)}
+.pill b{color:#fff}
+/* STATS */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat-card{background:var(--surface);border-radius:var(--r-md);padding:12px 10px;text-align:center;box-shadow:0 1px 3px rgba(11,45,82,.08);border:.5px solid var(--border)}
+.stat-val{font-size:26px;font-weight:600;line-height:1}
+.stat-lbl{font-size:10px;color:var(--gray-400);margin-top:4px;font-weight:500}
+/* ALARMS */
+.alarm-list{display:flex;flex-direction:column}
+.alarm-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:.5px solid var(--border)}
+.alarm-row:first-child{padding-top:0}
+.alarm-row:last-child{border-bottom:none;padding-bottom:0}
+.alarm-icon{width:32px;height:32px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.alarm-info{flex:1;min-width:0}
+.alarm-title{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.alarm-detail{font-size:11px;color:var(--gray-400);margin-top:1px}
+.alarm-time{font-size:10px;color:var(--gray-400);flex-shrink:0}
+.sev-red{background:var(--red-pale);color:var(--red)}
+.sev-amber{background:var(--amber-pale);color:var(--amber)}
+.sev-green{background:var(--green-pale);color:var(--green)}
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:100px;white-space:nowrap}
+.badge-red{background:var(--red-pale);color:var(--red)}
+.badge-amber{background:var(--amber-pale);color:var(--amber)}
+.badge-green{background:var(--green-pale);color:var(--green)}
+.badge-blue{background:var(--blue-pale);color:var(--blue)}
+.bdot{width:5px;height:5px;border-radius:50%;background:currentColor}
+/* CONTACT */
+.contact-row{display:flex;align-items:center;gap:12px}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--blue-pale);color:var(--blue);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex-shrink:0}
+.icon-btn{width:34px;height:34px;border-radius:50%;border:.5px solid var(--border);background:var(--bg);color:var(--blue);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px}
+/* PROGRESS */
+.prog-wrap{height:4px;background:var(--gray-100);border-radius:100px;margin-top:8px;overflow:hidden}
+.prog-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--amber),#F5A623)}
+/* FORM */
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-label{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--gray-600)}
+.form-control{width:100%;font-family:var(--font);font-size:14px;color:var(--text);background:var(--bg);border:1px solid var(--gray-200);border-radius:var(--r-md);padding:10px 12px;outline:none;appearance:none}
+.form-control:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,109,181,.12)}
+textarea.form-control{resize:none;line-height:1.6;min-height:80px}
+/* SEV BTNS */
+.sev-row{display:flex;gap:8px}
+.sev-btn{flex:1;padding:9px 0;font-size:12px;font-weight:600;border-radius:var(--r-md);border:1.5px solid transparent;cursor:pointer;font-family:var(--font)}
+.sev-btn.critica{background:var(--red-pale);color:var(--red)}
+.sev-btn.moderata{background:var(--amber-pale);color:var(--amber)}
+.sev-btn.lieve{background:var(--green-pale);color:var(--green)}
+.sev-btn.selected.critica{border-color:var(--red)}
+.sev-btn.selected.moderata{border-color:var(--amber)}
+.sev-btn.selected.lieve{border-color:var(--green)}
+/* PHOTO */
+.photo-upload{border:1.5px dashed var(--gray-200);border-radius:var(--r-lg);padding:18px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;cursor:pointer}
+.photo-upload i{font-size:24px;color:var(--gray-400)}
+.photo-upload span{font-size:12px;color:var(--gray-400);font-weight:500}
+/* HINT */
+.hint-card{background:var(--blue-pale);border:.5px solid rgba(26,109,181,.2);border-radius:var(--r-md);padding:10px 12px;display:flex;gap:10px;align-items:flex-start}
+.hint-title{font-size:12px;font-weight:600;color:var(--navy)}
+.hint-text{font-size:11px;color:var(--blue);margin-top:2px;line-height:1.5}
+/* BTN */
+.btn-primary{width:100%;background:var(--navy);color:#fff;font-family:var(--font);font-size:14px;font-weight:600;padding:13px;border:none;border-radius:var(--r-md);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-primary:disabled{opacity:.55;cursor:not-allowed}
+/* STORICO */
+.search-row{background:var(--surface);border-radius:var(--r-md);border:.5px solid var(--border);padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 3px rgba(11,45,82,.08)}
+.search-row input{flex:1;border:none;outline:none;font-family:var(--font);font-size:13px;color:var(--text);background:transparent}
+.chip-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chip{padding:5px 12px;border-radius:100px;font-size:11px;font-weight:600;white-space:nowrap;cursor:pointer;border:1px solid var(--gray-200);background:var(--surface);color:var(--gray-600)}
+.chip.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.sto-item{padding:12px 0;border-bottom:.5px solid var(--border)}
+.sto-item:first-child{padding-top:0}
+.sto-item:last-child{border-bottom:none;padding-bottom:0}
+.sto-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
+.sto-title{font-size:13px;font-weight:500}
+.sto-meta{font-size:11px;color:var(--gray-400);display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.sto-desc{font-size:12px;color:var(--gray-600);line-height:1.5}
+.serial-tag{font-family:var(--mono);font-size:10px;background:var(--gray-100);color:var(--gray-600);padding:2px 6px;border-radius:6px}
+.upd-card{background:linear-gradient(135deg,var(--blue-pale),#F0F8FF);border:.5px solid rgba(26,109,181,.2);border-radius:var(--r-md);padding:12px 14px;display:flex;align-items:center;gap:12px}
+.upd-icon{width:36px;height:36px;background:var(--blue);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;flex-shrink:0}
+.inst-btn{margin-left:auto;background:var(--blue);color:#fff;font-family:var(--font);font-size:11px;font-weight:600;padding:6px 12px;border:none;border-radius:6px;cursor:pointer}
+/* AI */
+.ai-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;background:var(--bg);scrollbar-width:none}
+.ai-welcome{text-align:center;padding:24px 16px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.ai-av{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--blue));display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;box-shadow:0 4px 12px rgba(11,45,82,.2)}
+.ai-wt{font-size:16px;font-weight:600;color:var(--navy)}
+.ai-ws{font-size:12px;color:var(--gray-400);line-height:1.6;max-width:240px}
+.quick-btns{display:flex;flex-direction:column;gap:6px}
+.quick-btn{background:var(--surface);border:.5px solid var(--border);border-radius:var(--r-md);padding:10px 14px;font-family:var(--font);font-size:12px;color:var(--blue);font-weight:500;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px}
+.msg{display:flex;flex-direction:column;max-width:82%}
+.msg.user{align-self:flex-end}
+.msg.ai{align-self:flex-start}
+.msg-name{font-size:10px;color:var(--gray-400);margin-bottom:4px;font-weight:500}
+.msg.user .msg-name{text-align:right}
+.msg-bubble{padding:10px 13px;border-radius:16px;font-size:13px;line-height:1.6;white-space:pre-wrap}
+.msg.user .msg-bubble{background:var(--navy);color:#fff;border-bottom-right-radius:4px}
+.msg.ai .msg-bubble{background:var(--surface);color:var(--text);border:.5px solid var(--border);border-bottom-left-radius:4px;box-shadow:0 1px 3px rgba(11,45,82,.08)}
+.typing{display:flex;gap:4px;align-items:center;padding:12px 14px;background:var(--surface);border:.5px solid var(--border);border-radius:16px;border-bottom-left-radius:4px;width:fit-content}
+.tdot{width:6px;height:6px;border-radius:50%;background:var(--gray-400);animation:typ 1.2s ease-in-out infinite}
+.tdot:nth-child(2){animation-delay:.2s}
+.tdot:nth-child(3){animation-delay:.4s}
+@keyframes typ{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+.ai-bar{padding:10px 12px;background:var(--surface);border-top:.5px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.ai-bar input{flex:1;font-family:var(--font);font-size:13px;padding:9px 13px;border-radius:100px;border:1px solid var(--gray-200);background:var(--bg);outline:none;color:var(--text)}
+.ai-bar input:focus{border-color:var(--blue)}
+.send-btn{width:36px;height:36px;border-radius:50%;background:var(--navy);color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;flex-shrink:0}
+/* NOTIFICHE */
+.notif-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:.5px solid var(--border);cursor:pointer}
+.notif-item:first-child{padding-top:0}
+.notif-item:last-child{border-bottom:none;padding-bottom:0}
+.notif-item.letta{opacity:.6}
+.nicon{width:36px;height:36px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.nbody{flex:1;min-width:0}
+.ntitle{font-size:13px;font-weight:500}
+.ndesc{font-size:11px;color:var(--gray-400);margin-top:2px;line-height:1.4}
+.nfooter{display:flex;align-items:center;justify-content:space-between;margin-top:2px}
+.ntime{font-size:10px;color:var(--gray-400)}
+.unread-dot{width:7px;height:7px;border-radius:50%;background:var(--blue);flex-shrink:0}
+/* TAB BAR */
+.tab-bar{background:var(--surface);border-top:.5px solid var(--border);display:flex;padding:8px 0 16px;flex-shrink:0;box-shadow:0 -4px 12px rgba(0,0,0,.04)}
+.tab-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 0;cursor:pointer;position:relative}
+.tab-icon-wrap{width:40px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:100px}
+.tab-item.active .tab-icon-wrap{background:var(--blue-pale)}
+.tab-item i{font-size:20px;color:var(--gray-400)}
+.tab-item.active i{color:var(--blue)}
+.tab-label{font-size:10px;font-weight:500;color:var(--gray-400)}
+.tab-item.active .tab-label{color:var(--blue)}
+.tab-badge{position:absolute;top:0;right:6px;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:100px;line-height:1.6}
+/* TOAST */
+.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%) translateY(-60px);background:var(--navy);color:#fff;padding:12px 20px;border-radius:var(--r-md);font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(11,45,82,.2);z-index:1000;opacity:0;transition:all .3s;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* MISC */
+.loading{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--gray-400);gap:10px;font-size:13px}
+.spinner{width:18px;height:18px;border:2px solid var(--gray-200);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;gap:8px;color:var(--gray-400);text-align:center}
+.empty i{font-size:32px;margin-bottom:4px}
+.empty-title{font-size:14px;font-weight:500;color:var(--gray-600)}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"><i class="fa-solid fa-circle-check" style="color:#3DD68C"></i><span id="toast-text"></span></div>
+<div id="app">
+
+<!-- LOGIN -->
+<div class="page active" id="page-login" style="background:var(--navy)">
+  <div class="login-wrap">
+    <div class="login-logo">⚓</div>
+    <div class="login-title">NauticOS</div>
+    <div class="login-sub">Gestione post-consegna imbarcazioni</div>
+    <div class="login-form">
+      <input class="login-input" type="email"    id="login-email"    placeholder="Email" />
+      <input class="login-input" type="password" id="login-password" placeholder="Password" />
+      <div class="login-error" id="login-error"></div>
+      <button class="login-btn" onclick="doLogin()">Accedi</button>
+    </div>
+    <div class="login-hint">Demo:<br>comandante@nauticos.app / password123<br>tecnico@nauticos.app / password123</div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div class="page" id="page-home">
+  <div class="topbar">
+    <div class="topbar-eyebrow">La tua imbarcazione</div>
+    <div class="topbar-title" id="home-modello">—</div>
+    <div class="topbar-sub"><span class="sdot"></span>Connessa &nbsp;·&nbsp;<span id="home-matricola" style="font-family:var(--mono);font-size:10px">—</span></div>
+  </div>
+  <div class="scroll" id="home-content"><div class="loading"><div class="spinner"></div>Caricamento...</div></div>
+</div>
+
+<!-- GUASTI -->
+<div class="page" id="page-guasti">
+  <div class="topbar">
+    <div class="topbar-eyebrow">Segnalazione</div>
+    <div class="topbar-title">Nuovo guasto</div>
+    <div class="topbar-sub">Crea scheda tecnica</div>
+  </div>
+  <div class="scroll">
+    <div class="card">
+      <div class="form-group">
+        <div class="form-label">Apparato di bordo</div>
+        <select class="form-control" id="g-apparato">
+          <option>Impianto antincendio</option><option>Motore SX — Volvo IPS600</option><option>Motore DX — Volvo IPS600</option><option>Condizionamento — Webasto</option><option>Navigazione — Garmin</option><option>Impianto elettrico</option><option>Generatore</option><option>Ormeggio / Stabilizzatori</option><option>Carena / Scafo</option><option>Altro</option>
+        </select>
+      </div>
+    </div>
+    <div class="card">
+      <div class="form-label">Gravità</div>
+      <div class="sev-row">
+        <button class="sev-btn critica selected" onclick="selectSev(this,'critica')"><i class="fa-solid fa-circle-exclamation" style="margin-right:4px"></i>Critica</button>
+        <button class="sev-btn moderata" onclick="selectSev(this,'moderata')"><i class="fa-solid fa-triangle-exclamation" style="margin-right:4px"></i>Moderata</button>
+        <button class="sev-btn lieve" onclick="selectSev(this,'lieve')"><i class="fa-solid fa-circle-info" style="margin-right:4px"></i>Lieve</button>
+      </div>
+    </div>
+    <div class="card"><div class="form-group"><div class="form-label">Titolo</div><input class="form-control" type="text" id="g-titolo" placeholder="Es. Allarme persistente zona prodiera"/></div></div>
+    <div class="card">
+      <div class="form-group">
+        <div class="form-label">Posizione</div>
+        <select class="form-control" id="g-posizione"><option>Ponte prodiero</option><option>Ponte poppiero</option><option>Locale macchine</option><option>Cabina armatore</option><option>Salone</option><option>Plancia</option><option>Fly bridge</option></select>
+      </div>
+    </div>
+    <div class="card"><div class="form-group"><div class="form-label">Descrizione</div><textarea class="form-control" id="g-descrizione" rows="4" placeholder="Descrivi i sintomi..."></textarea></div></div>
+    <div class="photo-upload"><i class="fa-solid fa-camera"></i><span>Aggiungi foto</span></div>
+    <div class="hint-card" id="g-hint" style="display:none"><i class="fa-solid fa-lightbulb" style="color:var(--blue);font-size:16px;flex-shrink:0;margin-top:1px"></i><div><div class="hint-title">Storico simile trovato</div><div class="hint-text" id="g-hint-text"></div></div></div>
+    <button class="btn-primary" id="g-btn" onclick="submitGuasto()"><i class="fa-solid fa-paper-plane"></i>Invia segnalazione al cantiere</button>
+    <div style="height:4px"></div>
+  </div>
+</div>
+
+<!-- STORICO -->
+<div class="page" id="page-storico">
+  <div class="topbar">
+    <div class="topbar-eyebrow">Archivio tecnico</div>
+    <div class="topbar-title">Storico segnalazioni</div>
+    <div class="topbar-sub" id="storico-sub">—</div>
+  </div>
+  <div class="scroll">
+    <div class="search-row"><i class="fa-solid fa-magnifying-glass"></i><input type="text" placeholder="Cerca..." id="storico-search" oninput="filterStorico()"/></div>
+    <div class="chip-row">
+      <div class="chip active" onclick="setChip(this,'')">Tutti</div>
+      <div class="chip" onclick="setChip(this,'aperta')">Aperti</div>
+      <div class="chip" onclick="setChip(this,'in_lavorazione')">In lavorazione</div>
+      <div class="chip" onclick="setChip(this,'risolta')">Risolti</div>
+    </div>
+    <div class="card" id="storico-list"><div class="loading"><div class="spinner"></div>Caricamento...</div></div>
+    <div class="upd-card"><div class="upd-icon"><i class="fa-solid fa-arrow-up"></i></div><div style="flex:1"><div class="card-title" style="font-size:13px;color:var(--navy)">Firmware v3.2.1</div><div class="card-sub" style="font-size:11px">Garmin Chartplotter · GPS fix</div></div><button class="inst-btn" onclick="showToast('Aggiornamento in coda...')">Installa</button></div>
+    <div style="height:4px"></div>
+  </div>
+</div>
+
+<!-- AI -->
+<div class="page" id="page-ai">
+  <div class="topbar">
+    <div class="topbar-eyebrow">Assistente intelligente</div>
+    <div class="topbar-title"><i class="fa-solid fa-robot" style="margin-right:6px;font-size:16px"></i>NauticAI</div>
+    <div class="topbar-sub"><span class="sdot"></span>Database tecnico di flotta</div>
+  </div>
+  <div class="ai-messages" id="ai-messages">
+    <div class="ai-welcome" id="ai-welcome">
+      <div class="ai-av"><i class="fa-solid fa-anchor"></i></div>
+      <div class="ai-wt">Sono NauticAI</div>
+      <div class="ai-ws">Assistente tecnico nautico. Diagnosi, manuali, procedure e storico guasti.</div>
+    </div>
+    <div class="quick-btns" id="quick-btns">
+      <button class="quick-btn" onclick="sendQuick('Il generatore non parte, cosa posso controllare?')"><i class="fa-solid fa-bolt"></i>Il generatore non parte</button>
+      <button class="quick-btn" onclick="sendQuick('Come si resetta l\'allarme antincendio?')"><i class="fa-solid fa-fire"></i>Reset allarme antincendio</button>
+      <button class="quick-btn" onclick="sendQuick('Abbiamo avuto problemi simili in passato?')"><i class="fa-solid fa-clock-rotate-left"></i>Storico simile</button>
+      <button class="quick-btn" onclick="sendQuick('Quando è il prossimo tagliando?')"><i class="fa-solid fa-wrench"></i>Piano manutenzione</button>
+    </div>
+  </div>
+  <div class="ai-bar">
+    <button class="send-btn" style="background:var(--bg);color:var(--gray-400);border:.5px solid var(--border)"><i class="fa-solid fa-microphone"></i></button>
+    <input type="text" id="ai-input" placeholder="Scrivi una domanda tecnica..." onkeydown="if(event.key==='Enter')sendAI()"/>
+    <button class="send-btn" onclick="sendAI()"><i class="fa-solid fa-paper-plane"></i></button>
+  </div>
+</div>
+
+<!-- NOTIFICHE -->
+<div class="page" id="page-notifiche">
+  <div class="topbar" style="display:flex;align-items:flex-start;justify-content:space-between">
+    <div>
+      <div class="topbar-eyebrow">Centro notifiche</div>
+      <div class="topbar-title">Aggiornamenti</div>
+      <div class="topbar-sub" id="notif-sub">Caricamento...</div>
+    </div>
+    <button onclick="leggiTutte()" style="background:rgba(255,255,255,.1);border:.5px solid rgba(255,255,255,.2);color:#fff;font-size:11px;font-weight:500;padding:6px 10px;border-radius:6px;cursor:pointer;margin-top:4px;font-family:var(--font)">Segna tutte lette</button>
+  </div>
+  <div class="scroll" id="notif-list"><div class="loading"><div class="spinner"></div>Caricamento...</div></div>
+</div>
+
+<!-- TAB BAR -->
+<nav class="tab-bar" id="tab-bar" style="display:none">
+  <div class="tab-item active" id="tab-home" onclick="goTo('home')"><div class="tab-icon-wrap"><i class="fa-solid fa-house"></i></div><span class="tab-label">Home</span></div>
+  <div class="tab-item" id="tab-guasti" onclick="goTo('guasti')"><div class="tab-icon-wrap"><i class="fa-solid fa-triangle-exclamation"></i></div><span class="tab-label">Guasti</span></div>
+  <div class="tab-item" id="tab-storico" onclick="goTo('storico')"><div class="tab-icon-wrap"><i class="fa-solid fa-clock-rotate-left"></i></div><span class="tab-label">Storico</span></div>
+  <div class="tab-item" id="tab-ai" onclick="goTo('ai')"><div class="tab-icon-wrap"><i class="fa-solid fa-robot"></i></div><span class="tab-label">AI</span></div>
+  <div class="tab-item" id="tab-notifiche" onclick="goTo('notifiche')"><div class="tab-icon-wrap"><i class="fa-solid fa-bell"></i></div><span class="tab-label">Notifiche</span><span class="tab-badge" id="notif-badge" style="display:none">0</span></div>
+</nav>
+</div>
+
+<script>
+const API = '/api';
+let TOKEN = localStorage.getItem('ntoken');
+let storicoData = [], storicoFilter = '', gravitaSel = 'critica';
+
+function getToken(){ return localStorage.getItem('ntoken'); }
+function setToken(t){ localStorage.setItem('ntoken',t); TOKEN=t; }
+function clearAll(){ localStorage.clear(); TOKEN=null; }
+
+async function apiFetch(url, opts={}){
+  const t = getToken();
+  const h = {'Content-Type':'application/json', ...(t?{Authorization:`Bearer ${t}`}:{})};
+  const r = await fetch(API+url, {...opts, headers:h});
+  const d = await r.json().catch(()=>({}));
+  if(r.status===401||r.status===403){ clearAll(); location.reload(); return null; }
+  if(!r.ok) throw new Error(d.error||'Errore '+r.status);
+  return d;
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  if(getToken()) showApp();
+  document.getElementById('login-password').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+});
+
+async function doLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const pass=document.getElementById('login-password').value;
+  const err=document.getElementById('login-error');
+  if(!email||!pass){err.textContent='Inserisci email e password.';return;}
+  err.textContent='';
+  try{
+    const d = await apiFetch('/auth/login',{method:'POST',body:JSON.stringify({email,password:pass})});
+    if(!d) return;
+    setToken(d.token);
+    localStorage.setItem('nuser', JSON.stringify(d.utente));
+    if(d.imbarcazioni&&d.imbarcazioni.length>0){
+      localStorage.setItem('nbarca', JSON.stringify(d.imbarcazioni[0]));
+    }
+    showApp();
+  }catch(e){ err.textContent=e.message; }
+}
+
+function showApp(){
+  document.getElementById('tab-bar').style.display='flex';
+  goTo('home');
+  loadHome();
+  loadNotifiche();
+}
+
+function goTo(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tab-item').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  const t=document.getElementById('tab-'+p);
+  if(t) t.classList.add('active');
+  if(p==='storico') loadStorico();
+  if(p==='notifiche') loadNotifiche();
+}
+
+async function loadHome(){
+  const barca = JSON.parse(localStorage.getItem('nbarca')||'null');
+  if(!barca){
+    document.getElementById('home-content').innerHTML='<div class="empty"><i class="fa-solid fa-ship"></i><div class="empty-title">Nessuna imbarcazione assegnata</div></div>';
+    return;
+  }
+  document.getElementById('home-modello').textContent=barca.modello||'—';
+  document.getElementById('home-matricola').textContent=barca.matricola||'—';
+  try{
+    const d = await apiFetch('/imbarcazioni/'+barca._id);
+    renderHome(d);
+  }catch(e){
+    document.getElementById('home-content').innerHTML=`<div class="empty"><i class="fa-solid fa-triangle-exclamation"></i><div class="empty-title">Errore caricamento</div><div class="empty-sub">${e.message}</div></div>`;
+  }
+}
+
+function renderHome(d){
+  const s=d.stats||{};
+  let alarmsHtml='';
+  (d.ultime_segnalazioni||[]).slice(0,3).forEach(seg=>{
+    const {icon,cls}=sevStyle(seg.gravita);
+    alarmsHtml+=`<div class="alarm-row"><div class="alarm-icon ${cls}"><i class="fa-solid ${icon}"></i></div><div class="alarm-info"><div class="alarm-title">${seg.titolo}</div><div class="alarm-detail">${seg.apparato} · ${statoLabel(seg.stato)}</div></div><div class="alarm-time">${relDate(seg.created_at)}</div></div>`;
+  });
+  let maintHtml='';
+  const pm=(d.manutenzioni||[]).find(m=>m.stato==='programmata');
+  if(pm){
+    const perc=pm.scadenza_ore?Math.round((pm.ore_attuali/pm.scadenza_ore)*100):50;
+    maintHtml=`<div class="card"><div class="card-label">Prossima manutenzione</div><div style="display:flex;align-items:center;gap:12px"><div style="width:36px;height:36px;border-radius:var(--r-md);background:var(--amber-pale);color:var(--amber);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0"><i class="fa-solid fa-wrench"></i></div><div style="flex:1"><div class="card-title">${pm.tipo}</div><div class="card-sub">${pm.scadenza_data?'Scadenza: '+fmtDate(pm.scadenza_data):''}</div></div></div>${pm.scadenza_ore?`<div class="prog-wrap"><div class="prog-fill" style="width:${perc}%"></div></div><div style="display:flex;justify-content:space-between;margin-top:4px"><span style="font-size:10px;color:var(--gray-400)">${pm.ore_attuali}h/${pm.scadenza_ore}h</span><span style="font-size:10px;color:var(--amber);font-weight:600">${perc}%</span></div>`:''}</div>`;
+  }
+  document.getElementById('home-content').innerHTML=`
+    <div class="boat-hero">
+      <div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px">Dashboard di bordo</div>
+      <div class="hero-model">${d.modello}</div>
+      <div class="hero-serial">${d.matricola} · Anno: ${d.anno}</div>
+      <div class="pill-row">
+        <div class="pill online"><span style="width:6px;height:6px;border-radius:50%;background:#3DD68C;display:inline-block;animation:pulse 2s infinite"></span>Online</div>
+        <div class="pill"><b>${s.totale||0}</b> segnalazioni</div>
+        <div class="pill"><b>${s.aperte||0}</b> aperte</div>
+      </div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-val" style="color:var(--red)">${s.critiche_aperte||0}</div><div class="stat-lbl">Critici</div></div>
+      <div class="stat-card"><div class="stat-val">${s.totale||0}</div><div class="stat-lbl">Totali</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:var(--teal)">${s.risolte||0}</div><div class="stat-lbl">Risolte</div></div>
+    </div>
+    ${alarmsHtml?`<div class="card"><div class="card-label">Ultimi eventi</div><div class="alarm-list">${alarmsHtml}</div></div>`:''}
+    ${maintHtml}
+    <div class="card"><div class="card-label">Referente cantiere</div><div class="contact-row"><div class="avatar">MR</div><div><div style="font-size:14px;font-weight:500">Marco Rossi</div><div style="font-size:11px;color:var(--gray-400)">Assistenza Ferretti Group</div></div><div style="display:flex;gap:8px;margin-left:auto"><div class="icon-btn"><i class="fa-solid fa-phone"></i></div><div class="icon-btn" onclick="goTo('ai')"><i class="fa-solid fa-message"></i></div></div></div></div>
+    <div style="height:4px"></div>`;
+}
+
+function selectSev(btn,val){ document.querySelectorAll('.sev-btn').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); gravitaSel=val; }
+
+async function submitGuasto(){
+  const barca=JSON.parse(localStorage.getItem('nbarca')||'null');
+  const titolo=document.getElementById('g-titolo').value.trim();
+  if(!titolo){showToast('Inserisci un titolo');return;}
+  if(!barca){showToast('Nessuna imbarcazione assegnata');return;}
+  const btn=document.getElementById('g-btn');
+  btn.disabled=true; btn.innerHTML='<div class="spinner" style="border-top-color:#fff;width:16px;height:16px;margin-right:8px"></div>Invio...';
+  try{
+    const n=await apiFetch('/segnalazioni',{method:'POST',body:JSON.stringify({imbarcazione_id:barca._id,apparato:document.getElementById('g-apparato').value,posizione:document.getElementById('g-posizione').value,gravita:gravitaSel,titolo,descrizione:document.getElementById('g-descrizione').value})});
+    showToast('✅ Ticket '+n.codice+' creato');
+    document.getElementById('g-titolo').value='';
+    document.getElementById('g-descrizione').value='';
+    setTimeout(()=>goTo('storico'),1500);
+  }catch(e){ showToast('❌ '+e.message); }
+  finally{ btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-paper-plane"></i>Invia segnalazione al cantiere'; }
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const s=document.getElementById('g-apparato');
+  if(s) s.addEventListener('change',loadHint);
+});
+
+async function loadHint(){
+  try{
+    const app=document.getElementById('g-apparato').value;
+    const d=await apiFetch('/segnalazioni?search='+encodeURIComponent(app)+'&stato=risolta');
+    const h=document.getElementById('g-hint');
+    if(d&&d.segnalazioni&&d.segnalazioni.length>0){
+      const s=d.segnalazioni[0];
+      h.style.display='flex';
+      document.getElementById('g-hint-text').textContent=`Caso simile (${s.codice}): "${s.soluzione||'nessuna soluzione registrata'}"`;
+    } else { h.style.display='none'; }
+  }catch(e){ document.getElementById('g-hint').style.display='none'; }
+}
+
+async function loadStorico(){
+  const barca=JSON.parse(localStorage.getItem('nbarca')||'null');
+  if(!barca) return;
+  document.getElementById('storico-sub').textContent=barca.matricola+' · caricamento...';
+  try{
+    let url='/segnalazioni?imbarcazione_id='+barca._id;
+    if(storicoFilter) url+='&stato='+storicoFilter;
+    const d=await apiFetch(url);
+    storicoData=d.segnalazioni||[];
+    document.getElementById('storico-sub').textContent=barca.matricola+' · '+d.total+' segnalazioni';
+    renderStorico(storicoData);
+  }catch(e){ document.getElementById('storico-list').innerHTML=`<div class="empty"><i class="fa-solid fa-triangle-exclamation"></i><div class="empty-title">${e.message}</div></div>`; }
+}
+
+function renderStorico(items){
+  const el=document.getElementById('storico-list');
+  if(!items.length){ el.innerHTML='<div class="empty"><i class="fa-solid fa-folder-open"></i><div class="empty-title">Nessuna segnalazione</div></div>'; return; }
+  el.innerHTML=items.map(s=>{
+    const {bc,bl}=statoBadge(s.stato);
+    return `<div class="sto-item"><div class="sto-row"><div class="sto-title">${s.apparato}</div><span class="badge ${bc}"><span class="bdot"></span>${bl}</span></div><div class="sto-meta"><span class="serial-tag">${s.codice}</span><span>${fmtDate(s.created_at)} · ${s.gravita}</span></div><div class="sto-desc">${s.titolo}</div></div>`;
+  }).join('');
+}
+
+function filterStorico(){
+  const q=document.getElementById('storico-search').value.toLowerCase();
+  renderStorico(storicoData.filter(s=>[s.apparato,s.titolo,s.codice,s.descrizione].some(f=>(f||'').toLowerCase().includes(q))));
+}
+
+function setChip(chip,filter){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  chip.classList.add('active');
+  storicoFilter=filter;
+  loadStorico();
+}
+
+async function sendAI(){
+  const inp=document.getElementById('ai-input');
+  const msg=inp.value.trim();
+  if(!msg) return;
+  inp.value='';
+  ['ai-welcome','quick-btns'].forEach(id=>{const e=document.getElementById(id);if(e)e.remove();});
+  appendMsg(msg,'user');
+  showTyping();
+  try{
+    const barca=JSON.parse(localStorage.getItem('nbarca')||'null');
+    const d=await apiFetch('/ai/chat',{method:'POST',body:JSON.stringify({messaggio:msg,imbarcazione_id:barca?._id})});
+    removeTyping();
+    if(d) appendMsg(d.risposta,'ai');
+  }catch(e){ removeTyping(); appendMsg('Errore di connessione. Riprova.','ai'); }
+}
+
+function sendQuick(msg){ document.getElementById('ai-input').value=msg; sendAI(); }
+
+function appendMsg(text,role){
+  const w=document.getElementById('ai-messages');
+  const d=document.createElement('div');
+  d.className='msg '+role;
+  d.innerHTML=`<div class="msg-name">${role==='user'?'Tu':'NauticAI'}</div><div class="msg-bubble">${text}</div>`;
+  w.appendChild(d); w.scrollTop=w.scrollHeight;
+}
+
+function showTyping(){
+  const w=document.getElementById('ai-messages');
+  const d=document.createElement('div');
+  d.className='msg ai'; d.id='typing';
+  d.innerHTML=`<div class="msg-name">NauticAI</div><div class="typing"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>`;
+  w.appendChild(d); w.scrollTop=w.scrollHeight;
+}
+
+function removeTyping(){ const e=document.getElementById('typing'); if(e)e.remove(); }
+
+async function loadNotifiche(){
+  try{
+    const d=await apiFetch('/notifiche');
+    const n=d.notifiche||[];
+    const nl=d.non_lette||0;
+    const badge=document.getElementById('notif-badge');
+    badge.style.display=nl>0?'block':'none';
+    badge.textContent=nl;
+    document.getElementById('notif-sub').textContent=nl+' non lette · '+n.length+' totali';
+    if(!n.length){ document.getElementById('notif-list').innerHTML='<div class="empty"><i class="fa-solid fa-bell-slash"></i><div class="empty-title">Nessuna notifica</div></div>'; return; }
+    document.getElementById('notif-list').innerHTML='<div class="card">'+n.map(renderNotif).join('')+'</div>';
+  }catch(e){ console.error(e); }
+}
+
+function renderNotif(n){
+  const {icon,cls}=notifStyle(n.tipo,n.gravita);
+  return `<div class="notif-item ${n.letta?'letta':''}" onclick="leggiNotif('${n._id}',this)"><div class="nicon ${cls}"><i class="fa-solid ${icon}"></i></div><div class="nbody"><div class="ntitle">${n.titolo}</div><div class="ndesc">${n.descrizione||''}</div><div class="nfooter"><span class="ntime">${relDate(n.created_at)}</span>${!n.letta?'<span class="unread-dot"></span>':''}</div></div></div>`;
+}
+
+async function leggiNotif(id,el){
+  try{ await apiFetch('/notifiche/'+id+'/leggi',{method:'PATCH'}); el.classList.add('letta'); el.querySelector('.unread-dot')?.remove(); loadNotifiche(); }catch(e){}
+}
+
+async function leggiTutte(){
+  try{ await apiFetch('/notifiche/leggi-tutte',{method:'PATCH'}); showToast('✅ Tutte le notifiche lette'); loadNotifiche(); }catch(e){}
+}
+
+let toastT=null;
+function showToast(msg){ const t=document.getElementById('toast'); document.getElementById('toast-text').textContent=msg; t.classList.add('show'); if(toastT)clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),3000); }
+
+function sevStyle(g){ if(g==='critica')return{icon:'fa-fire',cls:'sev-red'}; if(g==='moderata')return{icon:'fa-triangle-exclamation',cls:'sev-amber'}; return{icon:'fa-circle-info',cls:'sev-green'}; }
+function statoBadge(s){ const m={aperta:{bc:'badge-red',bl:'Aperta'},in_lavorazione:{bc:'badge-amber',bl:'In lavorazione'},risolta:{bc:'badge-green',bl:'Risolta'},chiusa:{bc:'badge-blue',bl:'Chiusa'}}; return m[s]||{bc:'badge-blue',bl:s}; }
+function statoLabel(s){ return{aperta:'Aperta',in_lavorazione:'In lavorazione',risolta:'Risolta',chiusa:'Chiusa'}[s]||s; }
+function notifStyle(tipo,gravita){ if(gravita==='critica')return{icon:'fa-fire',cls:'sev-red'}; if(gravita==='moderata')return{icon:'fa-gauge-high',cls:'sev-amber'}; if(tipo==='risposta')return{icon:'fa-comment',cls:'sev-green'}; if(tipo==='aggiornamento')return{icon:'fa-arrow-up',cls:'sev-green'}; if(gravita==='successo')return{icon:'fa-circle-check',cls:'sev-green'}; return{icon:'fa-bell',cls:'sev-green'}; }
+function fmtDate(s){ if(!s)return'—'; const d=new Date(s); return d.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+function relDate(s){ if(!s)return''; const d=new Date(s),now=new Date(),diff=Math.floor((now-d)/1000); if(diff<60)return'ora'; if(diff<3600)return Math.floor(diff/60)+'min'; if(diff<86400)return Math.floor(diff/3600)+'h'; if(diff<172800)return'ieri'; return fmtDate(s); }
+</script>
+</body>
+</html>

@@ -1,0 +1,2 @@
+{"imbarcazione_id":"M9rDQy6Uhv0vvgcc","tipo":"Ispezione carena","descrizione":"Carena, anodi zinco, elica","scadenza_data":"2025-09-01","scadenza_ore":null,"ore_attuali":null,"stato":"programmata","created_at":"2026-06-09T05:42:12.354Z","_id":"iWoTkQePnWrzF0Eu"}
+{"imbarcazione_id":"M9rDQy6Uhv0vvgcc","tipo":"Tagliando motori 500h","descrizione":"Cambio olio, filtri, cinghie","scadenza_data":"2025-07-15","scadenza_ore":500,"ore_attuali":455,"stato":"programmata","created_at":"2026-06-09T05:42:12.354Z","_id":"xknW3w3M8neczIsC"}
